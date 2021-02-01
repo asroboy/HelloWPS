@@ -6,9 +6,13 @@
 package org.geoserver.test.wps;
 
 import org.geoserver.wps.gs.GeoServerProcess;
+import org.geotools.data.Join;
+import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.filter.FilterFactoryImpl;
 import org.geotools.process.factory.DescribeParameter;
 import org.geotools.process.factory.DescribeProcess;
 import org.geotools.process.factory.DescribeResult;
+import org.opengis.filter.FilterFactory;
 
 /**
  *
@@ -21,4 +25,5 @@ public class HelloWps implements GeoServerProcess {
     public String execute(@DescribeParameter(name = "name", description = "name to return") String name) {
         return "Hello, " + name;
     }
+
 }

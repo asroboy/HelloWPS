@@ -1,1 +1,6 @@
+org\geoserver\test\wps\KelengkapanPolygon.class
+org\geoserver\test\wps\TestShp.class
+org\geoserver\test\wps\TingkatAkurasiWPSZ.class
 org\geoserver\test\wps\HelloWps.class
+org\geoserver\test\wps\TingkatAkurasiWPS.class
+org\geoserver\test\wps\GetWFSAttributes.class

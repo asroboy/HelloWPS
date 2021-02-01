@@ -16,6 +16,11 @@
     <dependencies>
         <dependency>
             <groupId>org.geotools</groupId>
+            <artifactId>gt-shapefile</artifactId>
+            <version>${gt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
             <artifactId>gt-process</artifactId>
             <version>${gt.version}</version>
         </dependency>
@@ -43,6 +48,17 @@
             <version>0.3.6</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>it.geosolutions</groupId>
+            <artifactId>geoserver-manager</artifactId>
+            <version>1.7.0</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.5.6</version>
+        </dependency>
     </dependencies>
 
     
@@ -60,7 +76,7 @@
     </build>
     
     <repositories>
-<!--        <repository>
+        <!--        <repository>
             <id>boundless</id>
             <name>Boundless Maven Repository</name>
             <url>https://repo.boundlessgeo.com/main</url>
@@ -70,6 +86,9 @@
             <name>OSGeo Release Repository</name>
             <url>https://repo.osgeo.org/repository/release/</url>
         </repository>
-
+        <repository>
+            <id>GeoSolutions</id>
+            <url>http://maven.geo-solutions.it/</url>
+        </repository>
     </repositories>
 </project>

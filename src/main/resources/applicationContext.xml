@@ -2,4 +2,7 @@
   <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
     <bean id="helloWPS" class="org.geoserver.test.wps.HelloWps"/>
+    <bean id="tingkatAkurasi" class="org.geoserver.test.wps.TingkatAkurasiWPS"/>
+    <bean id="tingkatAkurasiZ" class="org.geoserver.test.wps.TingkatAkurasiWPSZ"/>
+    <bean id="kelengkapanPolygon" class="org.geoserver.test.wps.KelengkapanPolygon"/>
 </beans>
