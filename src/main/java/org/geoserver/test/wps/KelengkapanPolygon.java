@@ -13,21 +13,37 @@ import java.util.List;
 import java.util.Map;
 import static org.geoserver.test.wps.IntersectionFeatureCollection.isGeometryTypeIn;
 import org.geoserver.wps.gs.GeoServerProcess;
+import org.geotools.coverage.util.FeatureUtilities;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
+import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.wfs.WFSDataStoreFactory;
+import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.geojson.geom.GeometryJSON;
+import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.process.factory.DescribeParameter;
 import org.geotools.process.factory.DescribeProcess;
 import org.geotools.process.factory.DescribeResult;
 import org.geotools.process.vector.IntersectionFeatureCollection;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
+import org.opengis.feature.Attribute;
+import org.opengis.feature.Property;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.AttributeType;
+import org.opengis.filter.FilterFactory2;
 
 /**
  *
@@ -47,7 +63,7 @@ public class KelengkapanPolygon implements GeoServerProcess {
     @DescribeResult(name = "result", description = "Output / Hasil")
     public SimpleFeatureCollection execute(@DescribeParameter(name = "Data Perhitungan/Uji (feature collection)", description = "Data Perhitungan (First feature collection)") SimpleFeatureCollection dataPerhitungan,
             @DescribeParameter(name = "Data Pembanding/Referensi (feature collection)", description = "Data Pembanding (Second feature collection)") SimpleFeatureCollection dataPembanding,
-            @DescribeParameter(name = "Jenis Analisis", description = "Jenis Analisi/Perhitungan yang ingin dilakukan") TujuanPerhitungan jenisAnalisis) throws IOException {
+            @DescribeParameter(name = "Jenis Analisis", description = "Jenis Analisi/Perhitungan yang ingin dilakukan") TujuanPerhitungan jenisAnalisis) throws IOException, Exception {
 
         final Class dataPerhitunganGeomType = ((SimpleFeatureType) dataPerhitungan.getSchema()).getGeometryDescriptor().getType().getBinding();
         final Class dataPembandingGeomType = ((SimpleFeatureType) dataPembanding.getSchema()).getGeometryDescriptor().getType().getBinding();
@@ -67,9 +83,100 @@ public class KelengkapanPolygon implements GeoServerProcess {
         });
         IntersectionFeatureCollection ifc = new IntersectionFeatureCollection();
 
-        SimpleFeatureCollection output = ifc.execute(dataPerhitungan, dataPembanding, attributes1, attributes2, getIntersectionMode(jenisAnalisis), Boolean.FALSE, Boolean.TRUE);
-
+//        SimpleFeatureCollection output = ifc.execute(dataPerhitungan, dataPembanding, attributes1, attributes2, getIntersectionMode(jenisAnalisis), Boolean.FALSE, Boolean.TRUE);
+        SimpleFeatureCollection output = difference(dataPerhitungan, dataPembanding, jenisAnalisis);
         return output;
+    }
+
+    public SimpleFeatureCollection difference(SimpleFeatureCollection sfc1, SimpleFeatureCollection sfc2, TujuanPerhitungan jenisAnalisis) throws Exception {
+        GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+
+        SimpleFeatureCollection source = jenisAnalisis == TujuanPerhitungan.OMISI ? sfc1 : sfc2;
+        SimpleFeatureCollection reference = jenisAnalisis == TujuanPerhitungan.OMISI ? sfc2 : sfc1;
+
+        FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
+        SimpleFeatureType sft = source.getSchema();
+
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName(jenisAnalisis == TujuanPerhitungan.OMISI ? "OMISI" : "KOMISI");
+        b.setCRS(sft.getCoordinateReferenceSystem());
+        b.addAll(sft.getAttributeDescriptors());
+
+        SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(b.buildFeatureType());
+        final List<SimpleFeature> result = new ArrayList<SimpleFeature>();
+        DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
+        try (SimpleFeatureIterator sourceIterator = source.features()) {
+            while (sourceIterator.hasNext()) {
+                SimpleFeature sourceFeature = sourceIterator.next();
+//                String uuid = (String) sourceFeature.getAttribute("Uuid");
+//                String guid = (String) sourceFeature.getAttribute("Guid");
+                Geometry sGeom = (Geometry) sourceFeature.getDefaultGeometry();
+                for (int i = 0; i < sGeom.getNumGeometries(); i++) {
+                    Polygon[] arrPolygon = new Polygon[sGeom.getNumGeometries()];
+                    for (int l = 0; l < sGeom.getNumGeometries(); l++) {
+                        arrPolygon[l] = (Polygon) sGeom.getGeometryN(i);
+                    }
+                    MultiPolygon sPolygon = geometryFactory.createMultiPolygon(arrPolygon);
+                    SimpleFeatureIterator clipIterator = reference.features();
+                    while (clipIterator.hasNext()) {
+                        final SimpleFeature clipFeature = clipIterator.next();
+                        Geometry cGeom = (Geometry) clipFeature.getDefaultGeometry();
+                        for (int j = 0; j < cGeom.getNumGeometries(); j++) {
+
+                            arrPolygon = new Polygon[cGeom.getNumGeometries()];
+                            for (int l = 0; l < cGeom.getNumGeometries(); l++) {
+                                arrPolygon[l] = (Polygon) cGeom.getGeometryN(j);
+                            }
+                            MultiPolygon cPolygon = geometryFactory.createMultiPolygon(arrPolygon);
+                            //if (sPolygon.disjoint(cPolygon)) break;
+                            try {
+                                if (sPolygon.intersects(cPolygon)) {
+                                    Geometry geometries = sPolygon.difference(cPolygon);
+                                    if (geometries.getNumGeometries() == 1) {
+                                        arrPolygon = new Polygon[geometries.getNumGeometries()];
+                                        if (geometries.getNumGeometries() > 0) {
+                                            arrPolygon = new Polygon[geometries.getNumGeometries()];
+                                            for (int l = 0; l < geometries.getNumGeometries(); l++) {
+                                                arrPolygon[l] = (Polygon) geometries.getGeometryN(l);
+                                            }
+                                        }
+                                        sPolygon = geometryFactory.createMultiPolygon(arrPolygon);
+                                    } else {
+                                        sPolygon = (MultiPolygon) geometries;
+                                    }
+                                }
+                            } catch (Exception problem) {
+                                System.out.println();
+                                System.out.println("Notice: 1 difference failed ");
+                                System.out.println(problem);
+                            }
+                        }
+                    }
+                    clipIterator.close();
+
+                    if (sPolygon.getNumGeometries() > 0) {
+                        if (sPolygon.getNumPoints() > 0) {
+                            featureBuilder.add(sPolygon);
+//                            featureBuilder.add(uuid);
+//                            featureBuilder.add(guid);
+                            for (AttributeDescriptor attributeDescriptor : sft.getAttributeDescriptors()) {
+                                if (!attributeDescriptor.getLocalName().equals("geom")) {
+                                    featureBuilder.add(sourceFeature.getAttribute(attributeDescriptor.getLocalName()));
+                                }
+                            }
+
+                            sourceFeature = featureBuilder.buildFeature(null);
+                            result.add((SimpleFeature) sourceFeature);
+                        }
+                    }
+                }
+            }
+        }
+        ListFeatureCollection collection = new ListFeatureCollection(b.buildFeatureType(), result);
+        collection.forEach((object) -> {
+            newCollection.add(object);
+        });
+        return newCollection.collection();
     }
 
     private boolean isGeometryTypeIn(final Class test, final Class... targets) {
