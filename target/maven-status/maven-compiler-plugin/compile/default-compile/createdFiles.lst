@@ -1,6 +1,16 @@
+org\geoserver\test\wps\IntersectionFeatureCollection$GeometryFilterImpl.class
 org\geoserver\test\wps\KelengkapanPolygon.class
+org\geoserver\test\wps\IntersectionFeatureCollection$IntersectedFeatureCollection.class
+org\geoserver\test\wps\IntersectionFeatureCollection.class
 org\geoserver\test\wps\TestShp.class
+org\geoserver\test\wps\IntersectionFeatureCollection$IntersectedFeatureIterator.class
 org\geoserver\test\wps\TingkatAkurasiWPSZ.class
 org\geoserver\test\wps\HelloWps.class
 org\geoserver\test\wps\TingkatAkurasiWPS.class
+org\geoserver\test\wps\KelengkapanPolygonDanHitungKualitas.class
+org\geoserver\test\wps\HitungTingkatKelengkapanPolygon.class
+org\geoserver\test\wps\KelengkapanPolygon$TujuanPerhitungan.class
+org\geoserver\test\wps\HitungTingkatKelengkapanPolygon$TujuanPerhitungan.class
 org\geoserver\test\wps\GetWFSAttributes.class
+org\geoserver\test\wps\IntersectionFeatureCollection$IntersectionMode.class
+org\geoserver\test\wps\KelengkapanPolygonDanHitungKualitas$TujuanPerhitungan.class

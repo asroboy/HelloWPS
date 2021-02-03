@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import static org.geoserver.test.wps.IntersectionFeatureCollection.isGeometryTypeIn;
 import org.geoserver.wps.gs.GeoServerProcess;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
@@ -33,8 +32,8 @@ import org.opengis.feature.simple.SimpleFeatureType;
  *
  * @author asrofiridho
  */
-@DescribeProcess(title = "kelengkapanPolygon", description = "Menghitung Omisi dan Komisi")
-public class KelengkapanPolygon implements GeoServerProcess {
+@DescribeProcess(title = "kelengkapanPolygonDanHitungKualitas", description = "Menghitung Kelengkapan Data (Omisi atau Komisi) dan Kualitas Kelengkapan Omisi atau Komisi. output berupa string informasi")
+public final class KelengkapanPolygonDanHitungKualitas implements GeoServerProcess {
 
     private static final int GEOMETRY_PRECISION = 8;
     DataStore dataStore = null;
@@ -45,7 +44,7 @@ public class KelengkapanPolygon implements GeoServerProcess {
     }
 
     @DescribeResult(name = "result", description = "Output / Hasil")
-    public SimpleFeatureCollection execute(@DescribeParameter(name = "Data Perhitungan/Uji (feature collection)", description = "Data Perhitungan (First feature collection)") SimpleFeatureCollection dataPerhitungan,
+    public String execute(@DescribeParameter(name = "Data Perhitungan/Uji (feature collection)", description = "Data Perhitungan (First feature collection)") SimpleFeatureCollection dataPerhitungan,
             @DescribeParameter(name = "Data Pembanding/Referensi (feature collection)", description = "Data Pembanding (Second feature collection)") SimpleFeatureCollection dataPembanding,
             @DescribeParameter(name = "Jenis Analisis", description = "Jenis Analisi/Perhitungan yang ingin dilakukan") TujuanPerhitungan jenisAnalisis) throws IOException {
 
@@ -68,8 +67,18 @@ public class KelengkapanPolygon implements GeoServerProcess {
         IntersectionFeatureCollection ifc = new IntersectionFeatureCollection();
 
         SimpleFeatureCollection output = ifc.execute(dataPerhitungan, dataPembanding, attributes1, attributes2, getIntersectionMode(jenisAnalisis), Boolean.FALSE, Boolean.TRUE);
+        String result = "-------------- Hasil Perhitungan----------------";
 
-        return output;
+        int rowCountDataOmisiKomisi = output.size();
+        int rowCountDataPembandung = dataPembanding.size();
+        
+        double prosentase = rowCountDataOmisiKomisi / rowCountDataPembandung * 100;
+        result += "\nJumlah row data pembanding/ref :" + rowCountDataPembandung;
+        result += "\nJumlah row data Omisi / Komisi :" + rowCountDataOmisiKomisi;
+        result += "\n---------------------------------------------";
+        result += "Prosentase Data Omisi  :" + String.valueOf(prosentase) + "%";
+
+        return result;
     }
 
     private boolean isGeometryTypeIn(final Class test, final Class... targets) {
@@ -115,7 +124,7 @@ public class KelengkapanPolygon implements GeoServerProcess {
         return dataStore.getSchema(name);
     }
 
-    public KelengkapanPolygon(String capabilities) {
+    public KelengkapanPolygonDanHitungKualitas(String capabilities) {
         aquireDataStoreWFS(capabilities);
     }
 

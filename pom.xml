@@ -11,6 +11,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <gt.version>24.1</gt.version> 
         <gs.version>2.18.1</gs.version>  
+        <slf4j.version>1.5.11</slf4j.version>
     </properties>
     
     <dependencies>
@@ -36,29 +37,7 @@
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.mockrunner</groupId>
-            <artifactId>mockrunner</artifactId>
-            <version>0.3.6</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>it.geosolutions</groupId>
-            <artifactId>geoserver-manager</artifactId>
-            <version>1.7.0</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.5.6</version>
-        </dependency>
+       
     </dependencies>
 
     

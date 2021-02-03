@@ -33,8 +33,8 @@ import org.opengis.feature.simple.SimpleFeatureType;
  *
  * @author asrofiridho
  */
-@DescribeProcess(title = "kelengkapanPolygon", description = "Menghitung Omisi dan Komisi")
-public class KelengkapanPolygon implements GeoServerProcess {
+@DescribeProcess(title = "kualitasKelengkapan", description = "Menghitung Kualitas Kelengkapan Omisi atau Komisi")
+public class HitungTingkatKelengkapanPolygon implements GeoServerProcess {
 
     private static final int GEOMETRY_PRECISION = 8;
     DataStore dataStore = null;
@@ -45,31 +45,30 @@ public class KelengkapanPolygon implements GeoServerProcess {
     }
 
     @DescribeResult(name = "result", description = "Output / Hasil")
-    public SimpleFeatureCollection execute(@DescribeParameter(name = "Data Perhitungan/Uji (feature collection)", description = "Data Perhitungan (First feature collection)") SimpleFeatureCollection dataPerhitungan,
-            @DescribeParameter(name = "Data Pembanding/Referensi (feature collection)", description = "Data Pembanding (Second feature collection)") SimpleFeatureCollection dataPembanding,
-            @DescribeParameter(name = "Jenis Analisis", description = "Jenis Analisi/Perhitungan yang ingin dilakukan") TujuanPerhitungan jenisAnalisis) throws IOException {
+    public String execute(@DescribeParameter(name = "Data Omisi/Komisi", description = "Data Omisi atau Komisi") SimpleFeatureCollection dataPerhitungan,
+            @DescribeParameter(name = "Data Pembanding/Referensi (feature collection)", description = "Data Pembanding (Second feature collection)") SimpleFeatureCollection dataPembanding) throws IOException {
 
         final Class dataPerhitunganGeomType = ((SimpleFeatureType) dataPerhitungan.getSchema()).getGeometryDescriptor().getType().getBinding();
         final Class dataPembandingGeomType = ((SimpleFeatureType) dataPembanding.getSchema()).getGeometryDescriptor().getType().getBinding();
         if (!isGeometryTypeIn(dataPerhitunganGeomType, MultiPolygon.class, Polygon.class, MultiLineString.class, LineString.class)) {
-            throw new IllegalArgumentException("Data Perhitungan Harus Polygon");
+            throw new IllegalArgumentException("Data Omisi/Komisi Harus Polygon");
         }
         if (!isGeometryTypeIn(dataPembandingGeomType, MultiPolygon.class, Polygon.class, MultiLineString.class, LineString.class)) {
             throw new IllegalArgumentException("Data Pembanding Harus Polygon");
         }
-        List<String> attributes1 = new ArrayList<>();
-        dataPerhitungan.getSchema().getAttributeDescriptors().forEach((at) -> {
-            attributes1.add(at.getLocalName());
-        });
-        List<String> attributes2 = new ArrayList<>();
-        dataPembanding.getSchema().getAttributeDescriptors().forEach((at) -> {
-            attributes2.add(at.getLocalName());
-        });
-        IntersectionFeatureCollection ifc = new IntersectionFeatureCollection();
 
-        SimpleFeatureCollection output = ifc.execute(dataPerhitungan, dataPembanding, attributes1, attributes2, getIntersectionMode(jenisAnalisis), Boolean.FALSE, Boolean.TRUE);
+        String result = "-------------- Hasil Perhitungan----------------";
 
-        return output;
+        int rowCountDataOmisiKomisi = dataPerhitungan.size();
+        int rowCountDataPembandung = dataPembanding.size();
+        
+        double prosentase = rowCountDataOmisiKomisi / rowCountDataPembandung * 100;
+        result += "\nJumlah row data pembanding/ref :" + rowCountDataPembandung;
+        result += "\nJumlah row data Omisi / Komisi :" + rowCountDataOmisiKomisi;
+        result += "\n---------------------------------------------";
+        result += "Prosentase Data Omisi  :" + String.valueOf(prosentase)+ "%";
+
+        return result;
     }
 
     private boolean isGeometryTypeIn(final Class test, final Class... targets) {
@@ -115,7 +114,7 @@ public class KelengkapanPolygon implements GeoServerProcess {
         return dataStore.getSchema(name);
     }
 
-    public KelengkapanPolygon(String capabilities) {
+    public HitungTingkatKelengkapanPolygon(String capabilities) {
         aquireDataStoreWFS(capabilities);
     }
 
