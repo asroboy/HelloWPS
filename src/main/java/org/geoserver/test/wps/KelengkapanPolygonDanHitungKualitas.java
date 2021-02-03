@@ -96,14 +96,13 @@ public final class KelengkapanPolygonDanHitungKualitas implements GeoServerProce
     }
 
     
-    
-    public SimpleFeatureCollection difference(SimpleFeatureCollection sfc1, SimpleFeatureCollection sfc2, TujuanPerhitungan jenisAnalisis) throws Exception {
+      public SimpleFeatureCollection difference(SimpleFeatureCollection sfc1, SimpleFeatureCollection sfc2, TujuanPerhitungan jenisAnalisis) throws Exception {
         GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 
         SimpleFeatureCollection source = jenisAnalisis == TujuanPerhitungan.OMISI ? sfc1 : sfc2;
         SimpleFeatureCollection reference = jenisAnalisis == TujuanPerhitungan.OMISI ? sfc2 : sfc1;
 
-        FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
+   
         SimpleFeatureType sft = source.getSchema();
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
@@ -114,6 +113,7 @@ public final class KelengkapanPolygonDanHitungKualitas implements GeoServerProce
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(b.buildFeatureType());
         final List<SimpleFeature> result = new ArrayList<SimpleFeature>();
         DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
+        int idd = 1;
         try (SimpleFeatureIterator sourceIterator = source.features()) {
             while (sourceIterator.hasNext()) {
                 SimpleFeature sourceFeature = sourceIterator.next();
@@ -174,11 +174,12 @@ public final class KelengkapanPolygonDanHitungKualitas implements GeoServerProce
                                 }
                             }
 
-                            sourceFeature = featureBuilder.buildFeature(null);
+                            sourceFeature = featureBuilder.buildFeature(String.valueOf(idd));
                             result.add((SimpleFeature) sourceFeature);
                         }
                     }
                 }
+                idd++;
             }
         }
         ListFeatureCollection collection = new ListFeatureCollection(b.buildFeatureType(), result);
