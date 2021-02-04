@@ -9,12 +9,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.geoserver.feature.FeatureSourceUtils;
 import org.geoserver.wps.gs.GeoServerProcess;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
@@ -22,29 +20,22 @@ import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.wfs.WFSDataStoreFactory;
-import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.geojson.geom.GeometryJSON;
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.process.factory.DescribeParameter;
 import org.geotools.process.factory.DescribeProcess;
 import org.geotools.process.factory.DescribeResult;
 import org.geotools.process.vector.IntersectionFeatureCollection;
-import org.geotools.util.factory.GeoTools;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.filter.Filter;
-import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.expression.Expression;
 
 /**
  *
@@ -131,14 +122,14 @@ public class KelengkapanPolygon implements GeoServerProcess {
     private static SimpleFeatureCollection difference(SimpleFeatureCollection sfc1, SimpleFeatureCollection sfc2,
             TujuanPerhitungan jenisAnalisis,
             final List<String> attributes1, List<String> attributes2) throws Exception {
-//        GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
-        SimpleFeatureCollection source = jenisAnalisis == TujuanPerhitungan.OMISI ? sfc1 : sfc2;
-        SimpleFeatureCollection reference = jenisAnalisis == TujuanPerhitungan.OMISI ? sfc2 : sfc1;
+
+        SimpleFeatureCollection source = jenisAnalisis == TujuanPerhitungan.OMISI ?  sfc2 : sfc1;
+        SimpleFeatureCollection reference = jenisAnalisis == TujuanPerhitungan.OMISI ? sfc1 : sfc2 ;
         SimpleFeatureType sft = source.getSchema();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(jenisAnalisis == TujuanPerhitungan.OMISI ? "OMISI" : "KOMISI");
         b.setCRS(sft.getCoordinateReferenceSystem());
-        List<String> theAttributes = (jenisAnalisis == TujuanPerhitungan.OMISI ? attributes1 : attributes2);
+        List<String> theAttributes = (jenisAnalisis == TujuanPerhitungan.OMISI ?  attributes2 : attributes1);
         theAttributes.forEach((key) -> {
             logger.log(Level.INFO, "key {0}", key);
             b.add(sft.getDescriptor(key));

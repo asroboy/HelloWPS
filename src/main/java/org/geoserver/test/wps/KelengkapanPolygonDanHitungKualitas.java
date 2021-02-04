@@ -106,101 +106,56 @@ public final class KelengkapanPolygonDanHitungKualitas implements GeoServerProce
         return result;
     }
 
-    public SimpleFeatureCollection difference(SimpleFeatureCollection sfc1, SimpleFeatureCollection sfc2, TujuanPerhitungan jenisAnalisis, final List<String> attributes1, List<String> attributes2) throws Exception {
-        GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+    private static SimpleFeatureCollection difference(SimpleFeatureCollection sfc1, SimpleFeatureCollection sfc2,
+            TujuanPerhitungan jenisAnalisis,
+            final List<String> attributes1, List<String> attributes2) throws Exception {
 
-        SimpleFeatureCollection source = jenisAnalisis == TujuanPerhitungan.OMISI ? sfc1 : sfc2;
-        SimpleFeatureCollection reference = jenisAnalisis == TujuanPerhitungan.OMISI ? sfc2 : sfc1;
-
+        SimpleFeatureCollection source = jenisAnalisis == TujuanPerhitungan.OMISI ?  sfc2 : sfc1;
+        SimpleFeatureCollection reference = jenisAnalisis == TujuanPerhitungan.OMISI ? sfc1 : sfc2 ;
         SimpleFeatureType sft = source.getSchema();
-
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(jenisAnalisis == TujuanPerhitungan.OMISI ? "OMISI" : "KOMISI");
         b.setCRS(sft.getCoordinateReferenceSystem());
-        List<String> theAttributes = (jenisAnalisis == TujuanPerhitungan.OMISI ? attributes1 : attributes2);
+        List<String> theAttributes = (jenisAnalisis == TujuanPerhitungan.OMISI ?  attributes2 : attributes1);
         theAttributes.forEach((key) -> {
             logger.log(Level.INFO, "key {0}", key);
             b.add(sft.getDescriptor(key));
         });
-//        b.addAll(sft.getAttributeDescriptors());
-
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(b.buildFeatureType());
         final List<SimpleFeature> result = new ArrayList<>();
         DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
         int idd = 1;
+
         try (SimpleFeatureIterator sourceIterator = source.features()) {
             while (sourceIterator.hasNext()) {
                 SimpleFeature sourceFeature = sourceIterator.next();
-//                String uuid = (String) sourceFeature.getAttribute("Uuid");
-//                String guid = (String) sourceFeature.getAttribute("Guid");
                 Geometry sGeom = (Geometry) sourceFeature.getDefaultGeometry();
-                for (int i = 0; i < sGeom.getNumGeometries(); i++) {
-                    Polygon[] arrPolygon = new Polygon[sGeom.getNumGeometries()];
-                    for (int l = 0; l < sGeom.getNumGeometries(); l++) {
-                        arrPolygon[l] = (Polygon) sGeom.getGeometryN(i);
-                    }
-                    MultiPolygon sPolygon = geometryFactory.createMultiPolygon(arrPolygon);
-                    try (SimpleFeatureIterator clipIterator = reference.features()) {
-                        while (clipIterator.hasNext()) {
-                            final SimpleFeature clipFeature = clipIterator.next();
-                            Geometry cGeom = (Geometry) clipFeature.getDefaultGeometry();
-                            for (int j = 0; j < cGeom.getNumGeometries(); j++) {
-
-                                arrPolygon = new Polygon[cGeom.getNumGeometries()];
-                                for (int l = 0; l < cGeom.getNumGeometries(); l++) {
-                                    arrPolygon[l] = (Polygon) cGeom.getGeometryN(j);
-                                }
-                                MultiPolygon cPolygon = geometryFactory.createMultiPolygon(arrPolygon);
-                                //if (sPolygon.disjoint(cPolygon)) break;
-                                try {
-                                    if (sPolygon.intersects(cPolygon)) {
-                                        Geometry geometries = sPolygon.difference(cPolygon);
-                                        if (geometries.getNumGeometries() == 1) {
-                                            arrPolygon = new Polygon[geometries.getNumGeometries()];
-                                            if (geometries.getNumGeometries() > 0) {
-                                                arrPolygon = new Polygon[geometries.getNumGeometries()];
-                                                for (int l = 0; l < geometries.getNumGeometries(); l++) {
-                                                    arrPolygon[l] = (Polygon) geometries.getGeometryN(l);
-                                                }
-                                            }
-                                            sPolygon = geometryFactory.createMultiPolygon(arrPolygon);
-                                        } else {
-                                            sPolygon = (MultiPolygon) geometries;
-                                        }
-                                    }
-                                } catch (Exception problem) {
-                                    logger.log(Level.WARNING, "Perhatian {0}", "1 difference failed ");
-                                    logger.log(Level.WARNING, "Penyebab Error: {0}", problem);
-//                                    System.out.println();
-//                                    System.out.println("Notice: 1 difference failed ");
-//                                    System.out.println(problem);
-                                }
-                            }
-                        }
-                    }
-
-                    if (sPolygon.getNumGeometries() > 0) {
-                        if (sPolygon.getNumPoints() > 0) {
-                            for (String key : theAttributes) {
-                                if (key.equals("geom")) {
-                                    featureBuilder.add(sPolygon);
-                                } else {
-//                                    logger.log(Level.INFO, "value {0}", sourceFeature.getAttribute(key));
-                                    featureBuilder.add(sourceFeature.getAttribute(key));
-                                }
-                            }
-
-//                            for (AttributeDescriptor attributeDescriptor : sft.getAttributeDescriptors()) {
-//                                if (!attributeDescriptor.getLocalName().equals("geom")) {
-//                                    featureBuilder.add(sourceFeature.getAttribute(attributeDescriptor.getLocalName()));
-//                                }
-//                            }
-                            sourceFeature = featureBuilder.buildFeature(String.valueOf(idd));
-                            result.add((SimpleFeature) sourceFeature);
+                System.out.println("id source " + sourceFeature.getID());
+                boolean bertampalan = false;
+                try (SimpleFeatureIterator clipIterator = reference.features()) {
+                    while (clipIterator.hasNext()) {
+                        final SimpleFeature clipFeature = clipIterator.next();
+                        Geometry cGeom = (Geometry) clipFeature.getDefaultGeometry();
+                        bertampalan = sGeom.intersects(cGeom);
+                        if (bertampalan) {
+                            bertampalan = true;
+                            break;
                         }
                     }
                 }
-                idd++;
+                System.out.println("geometri bertampalan " + bertampalan);
+                if (bertampalan == false) {
+                    for (String key : theAttributes) {
+                        if (key.equals(sft.getGeometryDescriptor().getLocalName())) {
+                            featureBuilder.add(sGeom);
+                        } else {
+                            featureBuilder.add(sourceFeature.getAttribute(key));
+                        }
+                    }
+                    sourceFeature = featureBuilder.buildFeature(String.valueOf(idd));
+                    result.add((SimpleFeature) sourceFeature);
+                    idd++;
+                }
             }
         }
         ListFeatureCollection collection = new ListFeatureCollection(b.buildFeatureType(), result);
@@ -209,7 +164,6 @@ public final class KelengkapanPolygonDanHitungKualitas implements GeoServerProce
         });
         return newCollection.collection();
     }
-
     private boolean isGeometryTypeIn(final Class test, final Class... targets) {
         for (final Class target : targets) {
             if (target.isAssignableFrom(test)) {
