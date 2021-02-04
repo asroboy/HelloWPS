@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import static org.geoserver.test.wps.IntersectionFeatureCollection.isGeometryTypeIn;
 import org.geoserver.wps.gs.GeoServerProcess;
 import org.geotools.data.DataStore;
@@ -60,13 +61,14 @@ public class HitungTingkatKelengkapanPolygon implements GeoServerProcess {
         String result = "-------------- Hasil Perhitungan----------------";
 
         int rowCountDataOmisiKomisi = dataPerhitungan.size();
-        int rowCountDataPembandung = dataPembanding.size();
-        
-        double prosentase = rowCountDataOmisiKomisi / rowCountDataPembandung * 100;
-        result += "\nJumlah row data pembanding/ref :" + rowCountDataPembandung;
+        int rowCountDataPembanding = dataPembanding.size();
+
+        double prosentase = Double.parseDouble(String.valueOf(rowCountDataOmisiKomisi)) / Double.parseDouble(String.valueOf(rowCountDataPembanding));
+
+        result += "\nJumlah row data pembanding/ref :" + rowCountDataPembanding;
         result += "\nJumlah row data Omisi / Komisi :" + rowCountDataOmisiKomisi;
         result += "\n---------------------------------------------";
-        result += "Prosentase Data Omisi  :" + String.valueOf(prosentase)+ "%";
+        result += "\nProsentase Data Omisi / Komisi  :" + String.format("%.2f", (prosentase * 100)) + "%";
 
         return result;
     }

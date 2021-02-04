@@ -166,7 +166,7 @@ public class KelengkapanPolygon implements GeoServerProcess {
                                 if (key.equals("geom")) {
                                     featureBuilder.add(sPolygon);
                                 } else {
-                                    logger.log(Level.INFO, "value {0}", sourceFeature.getAttribute(key));
+//                                    logger.log(Level.INFO, "value {0}", sourceFeature.getAttribute(key));
                                     featureBuilder.add(sourceFeature.getAttribute(key));
                                 }
                             }

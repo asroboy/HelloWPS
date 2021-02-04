@@ -92,13 +92,16 @@ public final class KelengkapanPolygonDanHitungKualitas implements GeoServerProce
         String result = "-------------- Hasil Perhitungan----------------";
 
         int rowCountDataOmisiKomisi = output.size();
-        int rowCountDataPembandung = dataPembanding.size();
+        int rowCountDataPembanding = dataPembanding.size();
         
-        double prosentase = rowCountDataOmisiKomisi / rowCountDataPembandung * 100;
-        result += "\nJumlah row data pembanding/ref :" + rowCountDataPembandung;
+        double prosentase = Double.parseDouble(String.valueOf(rowCountDataOmisiKomisi)) / Double.parseDouble(String.valueOf(rowCountDataPembanding));
+        logger.log(Level.SEVERE, "prosentase {0}", (prosentase));
+        logger.log(Level.SEVERE, "prosentase  * 100 {0}", (prosentase  * 100));
+        
+        result += "\nJumlah row data pembanding/ref :" + rowCountDataPembanding;
         result += "\nJumlah row data Omisi / Komisi :" + rowCountDataOmisiKomisi;
         result += "\n---------------------------------------------";
-        result += "Prosentase Data Omisi  :" + String.valueOf(prosentase) + "%";
+        result += "\nProsentase Data Omisi / Komisi  :" + String.format("%.2f",(prosentase  * 100)) + "%";
 
         return result;
     }
@@ -166,9 +169,11 @@ public final class KelengkapanPolygonDanHitungKualitas implements GeoServerProce
                                         }
                                     }
                                 } catch (Exception problem) {
-                                    System.out.println();
-                                    System.out.println("Notice: 1 difference failed ");
-                                    System.out.println(problem);
+                                    logger.log(Level.WARNING, "Perhatian {0}", "1 difference failed ");
+                                    logger.log(Level.WARNING, "Penyebab Error: {0}", problem);
+//                                    System.out.println();
+//                                    System.out.println("Notice: 1 difference failed ");
+//                                    System.out.println(problem);
                                 }
                             }
                         }
@@ -180,7 +185,7 @@ public final class KelengkapanPolygonDanHitungKualitas implements GeoServerProce
                                 if (key.equals("geom")) {
                                     featureBuilder.add(sPolygon);
                                 } else {
-                                    logger.log(Level.INFO, "value {0}", sourceFeature.getAttribute(key));
+//                                    logger.log(Level.INFO, "value {0}", sourceFeature.getAttribute(key));
                                     featureBuilder.add(sourceFeature.getAttribute(key));
                                 }
                             }

@@ -4,7 +4,6 @@
 package org.geoserver.test.wps;
 
 import java.util.ArrayList;
-import org.opengis.feature.Feature;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.expression.Expression;
@@ -12,10 +11,7 @@ import org.geotools.util.factory.Hints;
 import org.geotools.factory.CommonFactoryFinder;
 import java.util.NoSuchElementException;
 import org.locationtech.jts.geom.GeometryFilter;
-import org.geotools.feature.FeatureIterator;
-import org.opengis.feature.type.FeatureType;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import java.util.Iterator;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.collection.DecoratingSimpleFeatureCollection;
@@ -45,7 +41,6 @@ import java.util.List;
 import org.geotools.process.factory.DescribeParameter;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import java.util.logging.Logger;
-import org.geotools.process.factory.DescribeProcess;
 import org.geotools.process.vector.VectorProcess;
 
 //@DescribeProcess(title = "Intersection of Feature Collections", description = "Spatial intersection of two feature collections, including combining attributes from both.")
