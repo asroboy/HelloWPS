@@ -108,7 +108,7 @@ public final class KelengkapanPolygonDanHitungKualitas implements GeoServerProce
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(jenisAnalisis == TujuanPerhitungan.OMISI ? "OMISI" : "KOMISI");
         b.setCRS(sft.getCoordinateReferenceSystem());
-        b.addAll(sft.getAttributeDescriptors());
+//        b.addAll(sft.getAttributeDescriptors());
 
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(b.buildFeatureType());
         final List<SimpleFeature> result = new ArrayList<SimpleFeature>();
@@ -168,11 +168,11 @@ public final class KelengkapanPolygonDanHitungKualitas implements GeoServerProce
                             featureBuilder.add(sPolygon);
 //                            featureBuilder.add(uuid);
 //                            featureBuilder.add(guid);
-                            for (AttributeDescriptor attributeDescriptor : sft.getAttributeDescriptors()) {
-                                if (!attributeDescriptor.getLocalName().equals("geom")) {
-                                    featureBuilder.add(sourceFeature.getAttribute(attributeDescriptor.getLocalName()));
-                                }
-                            }
+//                            for (AttributeDescriptor attributeDescriptor : sft.getAttributeDescriptors()) {
+//                                if (!attributeDescriptor.getLocalName().equals("geom")) {
+//                                    featureBuilder.add(sourceFeature.getAttribute(attributeDescriptor.getLocalName()));
+//                                }
+//                            }
 
                             sourceFeature = featureBuilder.buildFeature(String.valueOf(idd));
                             result.add((SimpleFeature) sourceFeature);
