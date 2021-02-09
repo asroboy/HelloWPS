@@ -27,30 +27,20 @@ import org.opengis.feature.simple.SimpleFeatureType;
  * @author asrofiridho
  */
 
-//@DescribeProcess(title = "tingkatAkurasi", description = "Menghitung tingkat akurasi titik")
-public class TingkatAkurasiWPS implements GeoServerProcess {
+@DescribeProcess(title = "AkurasiPosisi2D", description = "Menghitung akurasi posisi 2 Dimensi / CE90")
+public class AkurasiPosisi2D implements GeoServerProcess {
 
     DataStore dataStore = null;
 
-//    @DescribeResult(name = "result", description = "Output / Hasil")
+    @DescribeResult(name = "Hasil", description = "Hasil hitungan akuarasi posisi")
     public String execute(
-            @DescribeParameter(name = "url", description = "Url Servis") String urlService,
-            @DescribeParameter(name = "Type Name 1", description = "(Type Name) Data Perhitungan") String typeName,
-            @DescribeParameter(name = "Type Name 2", description = "(Type Name) Data Peta") String typeName2) throws IOException {
-
-        String getCapabilities = urlService;
-        TingkatAkurasiWPS me = new TingkatAkurasiWPS(getCapabilities);
-        String[] names = me.getTypeNames();
-        for (String name : names) {
-            SimpleFeatureType schema = me.getSchema(name);
-            System.out.println(name + ":" + schema);
-        }
-
+            @DescribeParameter(name = "Data Pengukuran (service)", description = "Data Pengukuran") SimpleFeatureCollection firstFeatures,
+            @DescribeParameter(name = "Data Peta (service)", description = "Data Peta") SimpleFeatureCollection secondFeatures) throws IOException {
+        
         String txtData = "------------------------Data ------------------------";
         double sumdxsqdysq = 0.0;
 
-        SimpleFeatureCollection firstFeatures = me.getFeatureCollection(typeName);
-        SimpleFeatureCollection secondFeatures = me.getFeatureCollection(typeName2);
+      
         try (SimpleFeatureIterator itr = firstFeatures.features()) {
             while (itr.hasNext()) {
                 SimpleFeature f = itr.next();
@@ -111,7 +101,7 @@ public class TingkatAkurasiWPS implements GeoServerProcess {
         return dataStore.getSchema(name);
     }
 
-    public TingkatAkurasiWPS(String capabilities) {
+    public AkurasiPosisi2D(String capabilities) {
         aquireDataStoreWFS(capabilities);
     }
 

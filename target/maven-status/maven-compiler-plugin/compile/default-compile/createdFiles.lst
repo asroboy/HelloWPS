@@ -9,7 +9,10 @@ org\geoserver\test\wps\HelloWps.class
 org\geoserver\test\wps\TingkatAkurasiWPS.class
 org\geoserver\test\wps\KelengkapanPolygonDanHitungKualitas.class
 org\geoserver\test\wps\HitungTingkatKelengkapanPolygon.class
+org\geoserver\test\wps\AkurasiPosisi2D.class
+org\geoserver\test\wps\DeteksiKelengkapanPY.class
 org\geoserver\test\wps\KelengkapanPolygon$TujuanPerhitungan.class
+org\geoserver\test\wps\DeteksiKelengkapanPY$DeteksiKelengkapan.class
 org\geoserver\test\wps\HitungTingkatKelengkapanPolygon$TujuanPerhitungan.class
 org\geoserver\test\wps\GetWFSAttributes.class
 org\geoserver\test\wps\IntersectionFeatureCollection$IntersectionMode.class

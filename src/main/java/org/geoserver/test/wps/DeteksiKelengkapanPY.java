@@ -41,28 +41,28 @@ import org.opengis.feature.simple.SimpleFeatureType;
  *
  * @author asrofiridho
  */
-//@DescribeProcess(title = "kelengkapanPolygon", description = "Menghitung Omisi dan Komisi")
-public class KelengkapanPolygon implements GeoServerProcess {
+@DescribeProcess(title = "DeteksiKelengkapanPY", description = "Mendeteksi Omission dan Commission dengan data pembanding poligon")
+public class DeteksiKelengkapanPY implements GeoServerProcess {
 
     private static final Logger logger;
 
     static {
-        logger = Logger.getLogger("org.geoserver.test.wps.KelengkapanPolygon");
+        logger = Logger.getLogger("org.geoserver.test.wps.DeteksiKelengkapanPY");
     }
 
     private static final int GEOMETRY_PRECISION = 8;
     DataStore dataStore = null;
 
-    public enum TujuanPerhitungan {
-        OMISI,
-        KOMISI
+    public enum DeteksiKelengkapan {
+        OMISSION,
+        COMMISSION
     }
 
     public static void main(String[] args) throws IOException {
         try {
             String getCapabilities1 = "http://127.0.0.1:8080/geoserver/big_postgis/ows?service=WFS&version=1.0.0&request=GetCapabilities";
 //            String getCapabilities2 = "http://127.0.0.1:8080/geoserver/big_postgis/ows?service=WFS&version=1.0.0&request=GetCapabilities";
-            KelengkapanPolygon me = new KelengkapanPolygon(getCapabilities1);
+            DeteksiKelengkapanPY me = new DeteksiKelengkapanPY(getCapabilities1);
 
             String[] names = me.getTypeNames();
             System.out.println("type names size " + names.length);
@@ -77,8 +77,8 @@ public class KelengkapanPolygon implements GeoServerProcess {
             SimpleFeatureCollection secondFeatures = me.getFeatureCollection(typeName2);
 
             IntersectionFeatureCollection ifc = new IntersectionFeatureCollection();
-            KelengkapanPolygon kp = new KelengkapanPolygon("");
-            SimpleFeatureCollection output = kp.execute(firstFeatures, secondFeatures, TujuanPerhitungan.OMISI);
+            DeteksiKelengkapanPY kp = new DeteksiKelengkapanPY("");
+            SimpleFeatureCollection output = kp.execute(firstFeatures, secondFeatures, DeteksiKelengkapan.OMISSION);
             SimpleFeatureIterator sfi = output.features();
             if (sfi.hasNext()) {
                 SimpleFeature feature = sfi.next();
@@ -86,26 +86,26 @@ public class KelengkapanPolygon implements GeoServerProcess {
             }
 
         } catch (Exception ex) {
-            Logger.getLogger(KelengkapanPolygon.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DeteksiKelengkapanPY.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
 
-//    @DescribeResult(name = "result", description = "Output / Hasil")
-    public SimpleFeatureCollection execute(@DescribeParameter(name = "Data Perhitungan/Uji (feature collection)", description = "Data Perhitungan (First feature collection)") SimpleFeatureCollection dataPerhitungan,
+    @DescribeResult(name = "result", description = "Output / Hasil")
+    public SimpleFeatureCollection execute(@DescribeParameter(name = "Data Uji (feature collection)", description = "Data Uji (First feature collection)") SimpleFeatureCollection dataUji,
             @DescribeParameter(name = "Data Pembanding/Referensi (feature collection)", description = "Data Pembanding (Second feature collection)") SimpleFeatureCollection dataPembanding,
-            @DescribeParameter(name = "Jenis Analisis", description = "Jenis Analisi/Perhitungan yang ingin dilakukan") TujuanPerhitungan jenisAnalisis) throws IOException, Exception {
+            @DescribeParameter(name = "Analisis", description = "Analisi yang dilakukan") DeteksiKelengkapan Analisis) throws IOException, Exception {
 
-        final Class dataPerhitunganGeomType = ((SimpleFeatureType) dataPerhitungan.getSchema()).getGeometryDescriptor().getType().getBinding();
+        final Class dataUjiGeomType = ((SimpleFeatureType) dataUji.getSchema()).getGeometryDescriptor().getType().getBinding();
         final Class dataPembandingGeomType = ((SimpleFeatureType) dataPembanding.getSchema()).getGeometryDescriptor().getType().getBinding();
-        if (!isGeometryTypeIn(dataPerhitunganGeomType, MultiPolygon.class, Polygon.class, MultiLineString.class, LineString.class)) {
-            throw new IllegalArgumentException("Data Perhitungan Harus Polygon");
+        if (!isGeometryTypeIn(dataUjiGeomType, MultiPolygon.class, Polygon.class, MultiLineString.class, LineString.class)) {
+            throw new IllegalArgumentException("Data Uji Harus Polygon");
         }
         if (!isGeometryTypeIn(dataPembandingGeomType, MultiPolygon.class, Polygon.class, MultiLineString.class, LineString.class)) {
             throw new IllegalArgumentException("Data Pembanding Harus Polygon");
         }
         List<String> attributes1 = new ArrayList<>();
-        dataPerhitungan.getSchema().getAttributeDescriptors().forEach((at) -> {
+        dataUji.getSchema().getAttributeDescriptors().forEach((at) -> {
             attributes1.add(at.getLocalName());
         });
         List<String> attributes2 = new ArrayList<>();
@@ -114,22 +114,22 @@ public class KelengkapanPolygon implements GeoServerProcess {
         });
         IntersectionFeatureCollection ifc = new IntersectionFeatureCollection();
 
-//        SimpleFeatureCollection output = ifc.execute(dataPerhitungan, dataPembanding, attributes1, attributes2, getIntersectionMode(jenisAnalisis), Boolean.FALSE, Boolean.TRUE);
-        SimpleFeatureCollection output = difference(dataPerhitungan, dataPembanding, jenisAnalisis, attributes1, attributes2);
+//        SimpleFeatureCollection output = ifc.execute(dataUji, dataPembanding, attributes1, attributes2, getIntersectionMode(Analisis), Boolean.FALSE, Boolean.TRUE);
+        SimpleFeatureCollection output = difference(dataUji, dataPembanding, Analisis, attributes1, attributes2);
         return output;
     }
 
     private static SimpleFeatureCollection difference(SimpleFeatureCollection sfc1, SimpleFeatureCollection sfc2,
-            TujuanPerhitungan jenisAnalisis,
+            DeteksiKelengkapan Analisis,
             final List<String> attributes1, List<String> attributes2) throws Exception {
 
-        SimpleFeatureCollection source = jenisAnalisis == TujuanPerhitungan.OMISI ?  sfc2 : sfc1;
-        SimpleFeatureCollection reference = jenisAnalisis == TujuanPerhitungan.OMISI ? sfc1 : sfc2 ;
+        SimpleFeatureCollection source = Analisis == DeteksiKelengkapan.OMISSION ?  sfc2 : sfc1;
+        SimpleFeatureCollection reference = Analisis == DeteksiKelengkapan.OMISSION ? sfc1 : sfc2 ;
         SimpleFeatureType sft = source.getSchema();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName(jenisAnalisis == TujuanPerhitungan.OMISI ? "OMISI" : "KOMISI");
+        b.setName(Analisis == DeteksiKelengkapan.OMISSION ? "OMISSION" : "COMMISSION");
         b.setCRS(sft.getCoordinateReferenceSystem());
-        List<String> theAttributes = (jenisAnalisis == TujuanPerhitungan.OMISI ?  attributes2 : attributes1);
+        List<String> theAttributes = (Analisis == DeteksiKelengkapan.OMISSION ?  attributes2 : attributes1);
         theAttributes.forEach((key) -> {
             logger.log(Level.INFO, "key {0}", key);
             b.add(sft.getDescriptor(key));
@@ -187,11 +187,11 @@ public class KelengkapanPolygon implements GeoServerProcess {
         return false;
     }
 
-    private static IntersectionFeatureCollection.IntersectionMode getIntersectionMode(TujuanPerhitungan tujuanPerhitungan) {
-        if (tujuanPerhitungan == TujuanPerhitungan.KOMISI) {
+    private static IntersectionFeatureCollection.IntersectionMode getIntersectionMode(DeteksiKelengkapan DeteksiKelengkapan) {
+        if (DeteksiKelengkapan == DeteksiKelengkapan.COMMISSION) {
             return IntersectionFeatureCollection.IntersectionMode.FIRST;
         }
-        if (tujuanPerhitungan == TujuanPerhitungan.OMISI) {
+        if (DeteksiKelengkapan == DeteksiKelengkapan.OMISSION) {
             return IntersectionFeatureCollection.IntersectionMode.SECOND;
         }
 
@@ -221,7 +221,7 @@ public class KelengkapanPolygon implements GeoServerProcess {
         return dataStore.getSchema(name);
     }
 
-    public KelengkapanPolygon(String capabilities) {
+    public DeteksiKelengkapanPY(String capabilities) {
         aquireDataStoreWFS(capabilities);
     }
 
