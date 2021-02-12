@@ -7,4 +7,6 @@
     <bean id="kelengkapanPolygon" class="org.geoserver.test.wps.KelengkapanPolygon"/>
     <bean id="kelengkapanPolygonDanHitungKualitas" class="org.geoserver.test.wps.KelengkapanPolygonDanHitungKualitas"/>
     <bean id="kualitasKelengkapan" class="org.geoserver.test.wps.HitungTingkatKelengkapanPolygon"/>
+    <bean id="deketeksiKelengkapanPy" class="org.geoserver.test.wps.DeteksiKelengkapanPY"/>
+    <bean id="AkurasiPosisi2D" class="org.geoserver.test.wps.AkurasiPosisi2D"/>
 </beans>
