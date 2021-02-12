@@ -27,31 +27,30 @@ import org.opengis.feature.simple.SimpleFeatureType;
  * @author asrofiridho
  */
 
-@DescribeProcess(title = "tingkatAkurasiZ", description = "Menghitung tingkat akurasi XYZ")
+@DescribeProcess(title = "AkurasiPosisi3D", description = "Menghitung akurasi posisi 3 Dimensi / CE90")
 public class TingkatAkurasiWPSZ implements GeoServerProcess {
 
     DataStore dataStore = null;
 
     @DescribeResult(name = "result", description = "Output / Hasil")
     public String execute(
-            @DescribeParameter(name = "url", description = "Url Servis") String urlService,
-            @DescribeParameter(name = "Type Name 1", description = "(Type Name) Data Perhitungan") String typeName,
-            @DescribeParameter(name = "Type Name 2", description = "(Type Name) Data Peta") String typeName2) throws IOException {
+            @DescribeParameter(name = "Data Pengukuran", description = "Data Pengukuran")  SimpleFeatureCollection firstFeatures,
+            @DescribeParameter(name = "Date Peta", description = "Data Peta") SimpleFeatureCollection secondFeatures) throws IOException {
 
-        String getCapabilities = urlService;
-        TingkatAkurasiWPSZ me = new TingkatAkurasiWPSZ(getCapabilities);
-        String[] names = me.getTypeNames();
-        for (String name : names) {
-            SimpleFeatureType schema = me.getSchema(name);
-            System.out.println(name + ":" + schema);
-        }
-
+//        String getCapabilities = urlService;
+//        TingkatAkurasiWPSZ me = new TingkatAkurasiWPSZ(getCapabilities);
+//        String[] names = me.getTypeNames();
+//        for (String name : names) {
+//            SimpleFeatureType schema = me.getSchema(name);
+//            System.out.println(name + ":" + schema);
+//        }
+//
         String txtData = "------------------------Data ------------------------";
         double sumdxsqdysq = 0.0;
         double sumdzsq = 0.0;
 
-        SimpleFeatureCollection firstFeatures = me.getFeatureCollection(typeName);
-        SimpleFeatureCollection secondFeatures = me.getFeatureCollection(typeName2);
+//        SimpleFeatureCollection firstFeatures = me.getFeatureCollection(typeName);
+//        SimpleFeatureCollection secondFeatures = me.getFeatureCollection(typeName2);
         try (SimpleFeatureIterator itr = firstFeatures.features()) {
             while (itr.hasNext()) {
                 SimpleFeature f = itr.next();
