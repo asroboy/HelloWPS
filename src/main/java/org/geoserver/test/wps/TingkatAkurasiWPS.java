@@ -7,6 +7,8 @@ package org.geoserver.test.wps;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 import org.geoserver.wps.gs.GeoServerProcess;
@@ -26,7 +28,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
  *
  * @author asrofiridho
  */
-
 //@DescribeProcess(title = "tingkatAkurasi", description = "Menghitung tingkat akurasi titik")
 public class TingkatAkurasiWPS implements GeoServerProcess {
 
@@ -37,6 +38,12 @@ public class TingkatAkurasiWPS implements GeoServerProcess {
             @DescribeParameter(name = "url", description = "Url Servis") String urlService,
             @DescribeParameter(name = "Type Name 1", description = "(Type Name) Data Perhitungan") String typeName,
             @DescribeParameter(name = "Type Name 2", description = "(Type Name) Data Peta") String typeName2) throws IOException {
+
+        DecimalFormat df = new DecimalFormat("#.####");
+        df.setRoundingMode(RoundingMode.CEILING);
+
+        DecimalFormat dfGeom = new DecimalFormat("#.##########");
+        dfGeom.setRoundingMode(RoundingMode.CEILING);
 
         String getCapabilities = urlService;
         TingkatAkurasiWPS me = new TingkatAkurasiWPS(getCapabilities);
@@ -76,8 +83,15 @@ public class TingkatAkurasiWPS implements GeoServerProcess {
                             double dysq = Math.pow(dy, 2);
                             double dxsq_dysq = dysq + dxsq;
                             sumdxsqdysq += dxsq_dysq;
-                            txtData += String.format("\nx %f y %f, x2 %f y2 %f, Dx %f Dy %f dxsq %f dysq %f dxsq + dysq %f",
-                                    geom.getX(), geom.getY(), geom2.getX(), geom.getY(), dx, dy, dxsq, dysq, dxsq_dysq);
+//                            txtData += String.format("\nx %f y %f, x2 %f y2 %f, Dx %f Dy %f dxsq %f dysq %f dxsq + dysq %f",
+//                                    geom.getX(), geom.getY(), geom2.getX(), geom.getY(), dx, dy, dxsq, dysq, dxsq_dysq);
+                        
+                        
+                            txtData += "\nx " + dfGeom.format(geom.getX()) + " y " +  dfGeom.format(geom.getY()) +
+                                        " x2 " +  dfGeom.format(geom2.getX()) + " y2 " + dfGeom.format(geom2.getY()) +
+                                        " Dx " +  dfGeom.format(dx) + " Dy " + dfGeom.format(dy) + 
+                                        " dxsq " +  dfGeom.format(dxsq) + " dysq " + dfGeom.format(dysq) + 
+                                        " dxsq + dysq " +  dfGeom.format(dxsq_dysq);
                         }
 //                      System.out.println("Geom : " + geom.toText());
                     }
@@ -86,18 +100,17 @@ public class TingkatAkurasiWPS implements GeoServerProcess {
         }
 
         txtData += "\n\n----------result-----------\n";
-        txtData += "\nsum of dxsq + dysq : " + String.valueOf(sumdxsqdysq);
+        txtData += "\nsum of dxsq + dysq : " +  df.format(sumdxsqdysq);
         double rataRata = sumdxsqdysq / firstFeatures.size();
         txtData += "\nsize data : " + String.valueOf(firstFeatures.size());
-        txtData += "\navg of (sum dxsq + dysq) : " + String.valueOf(rataRata);
+        txtData += "\navg of (sum dxsq + dysq) : " + df.format(rataRata);
         double RMSE = Math.pow(rataRata, 0.5);
-        txtData += "\nRMSE : " + String.valueOf(RMSE);
+        txtData += "\nRMSE : " + df.format(RMSE);
         double akurasi = 1.5175 * RMSE;
-        txtData += "\naccuration : " + String.valueOf(akurasi);
+        txtData += "\naccuration : " + df.format(akurasi);
 
         return txtData;
     }
-
 
     private SimpleFeatureCollection getFeatureCollection(String typeName) throws IOException {
         return dataStore.getFeatureSource(typeName).getFeatures();

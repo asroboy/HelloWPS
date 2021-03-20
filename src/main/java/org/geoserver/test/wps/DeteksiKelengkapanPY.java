@@ -114,7 +114,6 @@ public class DeteksiKelengkapanPY implements GeoServerProcess {
         });
         IntersectionFeatureCollection ifc = new IntersectionFeatureCollection();
 
-//        SimpleFeatureCollection output = ifc.execute(dataUji, dataPembanding, attributes1, attributes2, getIntersectionMode(Analisis), Boolean.FALSE, Boolean.TRUE);
         SimpleFeatureCollection output = difference(dataUji, dataPembanding, Analisis, attributes1, attributes2);
         return output;
     }
@@ -123,13 +122,13 @@ public class DeteksiKelengkapanPY implements GeoServerProcess {
             DeteksiKelengkapan Analisis,
             final List<String> attributes1, List<String> attributes2) throws Exception {
 
-        SimpleFeatureCollection source = Analisis == DeteksiKelengkapan.OMISSION ?  sfc2 : sfc1;
-        SimpleFeatureCollection reference = Analisis == DeteksiKelengkapan.OMISSION ? sfc1 : sfc2 ;
+        SimpleFeatureCollection source = Analisis == DeteksiKelengkapan.OMISSION ? sfc2 : sfc1;
+        SimpleFeatureCollection reference = Analisis == DeteksiKelengkapan.OMISSION ? sfc1 : sfc2;
         SimpleFeatureType sft = source.getSchema();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(Analisis == DeteksiKelengkapan.OMISSION ? "OMISSION" : "COMMISSION");
         b.setCRS(sft.getCoordinateReferenceSystem());
-        List<String> theAttributes = (Analisis == DeteksiKelengkapan.OMISSION ?  attributes2 : attributes1);
+        List<String> theAttributes = (Analisis == DeteksiKelengkapan.OMISSION ? attributes2 : attributes1);
         theAttributes.forEach((key) -> {
             logger.log(Level.INFO, "key {0}", key);
             b.add(sft.getDescriptor(key));

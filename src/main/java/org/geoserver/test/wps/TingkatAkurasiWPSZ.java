@@ -7,6 +7,8 @@ package org.geoserver.test.wps;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 import org.geoserver.wps.gs.GeoServerProcess;
@@ -26,7 +28,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
  *
  * @author asrofiridho
  */
-
 @DescribeProcess(title = "AkurasiPosisi3D", description = "Menghitung akurasi posisi 3 Dimensi / CE90")
 public class TingkatAkurasiWPSZ implements GeoServerProcess {
 
@@ -34,23 +35,19 @@ public class TingkatAkurasiWPSZ implements GeoServerProcess {
 
     @DescribeResult(name = "result", description = "Output / Hasil")
     public String execute(
-            @DescribeParameter(name = "Data Pengukuran", description = "Data Pengukuran")  SimpleFeatureCollection firstFeatures,
+            @DescribeParameter(name = "Data Pengukuran", description = "Data Pengukuran") SimpleFeatureCollection firstFeatures,
             @DescribeParameter(name = "Date Peta", description = "Data Peta") SimpleFeatureCollection secondFeatures) throws IOException {
 
-//        String getCapabilities = urlService;
-//        TingkatAkurasiWPSZ me = new TingkatAkurasiWPSZ(getCapabilities);
-//        String[] names = me.getTypeNames();
-//        for (String name : names) {
-//            SimpleFeatureType schema = me.getSchema(name);
-//            System.out.println(name + ":" + schema);
-//        }
-//
+        DecimalFormat df = new DecimalFormat("#.####");
+        df.setRoundingMode(RoundingMode.CEILING);
+
+        DecimalFormat dfGeom = new DecimalFormat("#.##########");
+        dfGeom.setRoundingMode(RoundingMode.CEILING);
+
         String txtData = "------------------------Data ------------------------";
         double sumdxsqdysq = 0.0;
         double sumdzsq = 0.0;
 
-//        SimpleFeatureCollection firstFeatures = me.getFeatureCollection(typeName);
-//        SimpleFeatureCollection secondFeatures = me.getFeatureCollection(typeName2);
         try (SimpleFeatureIterator itr = firstFeatures.features()) {
             while (itr.hasNext()) {
                 SimpleFeature f = itr.next();
@@ -74,8 +71,14 @@ public class TingkatAkurasiWPSZ implements GeoServerProcess {
                             sumdxsqdysq += dxsq_dysq;
                             sumdzsq += dzsq;
                             txtData += String.format("\nx %f y %f z %f, x2 %f y2 %f z2 %f, Dx %f Dy %f Dz %f dxsq %f dysq %f dzsq %f dxsq + dysq %f",
-                                    geom.getX(), geom.getY(), geom.getCoordinate().z, geom2.getX(), geom.getY(), geom2.getCoordinate().z, dx, dy, dz, 
+                                    geom.getX(), geom.getY(), geom.getCoordinate().z, geom2.getX(), geom.getY(), geom2.getCoordinate().z, dx, dy, dz,
                                     dxsq, dysq, dzsq, dxsq_dysq);
+
+                            txtData += "\nx " + dfGeom.format(geom.getX()) + " y " + dfGeom.format(geom.getY()) + " z " + dfGeom.format(geom.getCoordinate().z)
+                                    + " x2 " + dfGeom.format(geom2.getX()) + " y2 " + dfGeom.format(geom2.getY()) + " z2 " + dfGeom.format(geom2.getCoordinate().z)
+                                    + " Dx " + dfGeom.format(dx) + " Dy " + dfGeom.format(dy) + " Dz " + dfGeom.format(dz)
+                                    + " dxsq " + dfGeom.format(dxsq) + " dysq " + dfGeom.format(dysq) + " dzsq " + dfGeom.format(dzsq)
+                                    + " dxsq + dysq " + dfGeom.format(dxsq_dysq);
                         }
 //                      System.out.println("Geom : " + geom.toText());
                     }
@@ -84,29 +87,25 @@ public class TingkatAkurasiWPSZ implements GeoServerProcess {
         }
 
         txtData += "\n\n----------result horzontal (XY)-----------\n";
-        txtData += "\nsum of dxsq + dysq : " + String.valueOf(sumdxsqdysq);
+        txtData += "\nsum of dxsq + dysq : " + df.format(sumdxsqdysq);
         double rataRata = sumdxsqdysq / firstFeatures.size();
         txtData += "\nsize data : " + String.valueOf(firstFeatures.size());
-        txtData += "\navg of (sum dxsq + dysq) : " + String.valueOf(rataRata);
+        txtData += "\navg of (sum dxsq + dysq) : " + df.format(rataRata);
         double RMSE = Math.pow(rataRata, 0.5);
-        txtData += "\nRMSE : " + String.valueOf(RMSE);
+        txtData += "\nRMSE : " + df.format(RMSE);
         double akurasi = 1.5175 * RMSE;
-        txtData += "\naccuration : " + String.valueOf(akurasi);
+        txtData += "\naccuration : " + df.format(akurasi);
 
-        
-        
         txtData += "\n\n----------result vertical (Z)-----------\n";
-        txtData += "\nsum of dzsq : " + String.valueOf(sumdzsq);
-        double  rataRataDz = sumdzsq / firstFeatures.size();
-        txtData += "\navg of (sum dzsq) : " + String.valueOf(rataRataDz);
+        txtData += "\nsum of dzsq : " + df.format(sumdzsq);
+        double rataRataDz = sumdzsq / firstFeatures.size();
+        txtData += "\navg of (sum dzsq) : " + df.format(rataRataDz);
         double RMSEZ = Math.pow(rataRataDz, 0.5);
         double akurasiZ = 1.6449 * RMSEZ;
-        txtData += "\nvertical accuration : " + String.valueOf(akurasiZ);
-        
-        
+        txtData += "\nvertical accuration : " + df.format(akurasiZ);
+
         return txtData;
     }
-
 
     private SimpleFeatureCollection getFeatureCollection(String typeName) throws IOException {
         return dataStore.getFeatureSource(typeName).getFeatures();
